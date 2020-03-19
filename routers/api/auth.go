@@ -1,32 +1,43 @@
 package api
 
 import (
+	"github.com/EDDYCJY/go-gin-example/service/auth_service"
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
+
 	//"log"
 	"net/http"
-	"oldboymiaosha/models"
-	"oldboymiaosha/pkg/e"
-	"oldboymiaosha/pkg/util"
-	"oldboymiaosha/pkg/logging"
+	"blog/pkg/app"
+	"blog/pkg/e"
+	"blog/pkg/util"
 )
 
-type auth struct{
+type auth struct {
 	Username string `valid:"Required; MaxSize(50)"`
 	Password string `valid:"Required; MaxSize(50)"`
-
 }
 
-func GetAuth(c *gin.Context){
-	username:=c.Query("username")
-	password:=c.Query(("password"))
-	valid :=validation.Validation{}
-	a:=auth{Username:username,Password:password}
-	ok,_:=valid.Valid(&a)
-	data:=make(map[string]interface{})
-	code:=e.INVALID_PARAMS
-	if ok{
-		isExist:=models.CheckAuth(username,password)
+// @Summary Get Auth
+// @Produce json
+// @Param username query string true "username"
+// @Param password query string true "password"
+// @Sucess 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /auth [get]
+func GetAuth(c *gin.Context) {
+	appG := app.Gin{C: c}
+	username := c.Query("username")
+	password := c.Query(("password"))
+	valid := validation.Validation{}
+	a := auth{Username: username, Password: password}
+	ok, _ := valid.Valid(&a)
+	/* data:=make(map[string]interface{})
+	code:=e.INVALID_PARAMS */
+	if !ok {
+		app.MarkErrors(valid.Errors)
+		appG.Response(http.StatusBadRequest, e.INVALID_PARAMS, nil)
+		return
+		/* isExist:=models.CheckAuth(username,password)
 		if isExist{
 			token,err:=util.GenerateToken(username,password)
 			if err!=nil{
@@ -37,18 +48,26 @@ func GetAuth(c *gin.Context){
 			}
 		}else{
 			code=e.ERROR_AUTH
-		}
-	}else{
-		for _,err:=range valid.Errors{
-			logging.Info(err.Key,err.Message)
-		}
+		} */
 	}
-	c.JSON(http.StatusOK,gin.H{
-		"code":code,
-		"msg":e.GetMsg(code),
-		"data":data,
+	authServer := auth_service.Auth{Username: username, Password: password}
+	isExist, err := authServer.Check()
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_AUTH_CHECK_TOKEN_FAIL, nil)
+		return
+	}
+	if !isExist {
+		appG.Response(http.StatusUnauthorized, e.ERROR_AUTH, nil)
+		return
+	}
+	token, err := util.GenerateToken(username, password)
+	if err != nil {
+		appG.Response(http.StatusInternalServerError, e.ERROR_AUTH_TOKEN, nil)
+		return
+	}
+
+	appG.Response(http.StatusOK, e.SUCCESS, map[string]string{
+		"token": token,
 	})
 
-
 }
-

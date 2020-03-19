@@ -1,12 +1,13 @@
 package qrcode
 
 import (
+	"image/jpeg"
+	"blog/pkg/file"
+	"blog/pkg/setting"
+	"blog/pkg/util"
+
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
-	"image/jpeg"
-	"oldboymiaosha/pkg/file"
-	"oldboymiaosha/pkg/setting"
-	"oldboymiaosha/pkg/util"
 )
 
 type QrCode struct {
@@ -41,7 +42,7 @@ func GetQrCodeFullPath() string {
 	return setting.AppSetting.RuntimeRootPath + setting.AppSetting.QrCodeSavePath
 }
 
-func GetQrCodeFullUrl() string {
+func GetQrCodeFullUrl(name string) string {
 	return setting.AppSetting.PrefixUrl + "/" + GetQrCodePath() + name
 }
 
@@ -53,13 +54,13 @@ func (q *QrCode) GetQrCodeExt() string {
 	return q.Ext
 }
 
-func (q *QrCode) CheckEncode(path string) bool {
+/* func (q *QrCode) CheckEncode(path string) bool {
 	src := path + GetQrCodeFileName(q.URL) + q.GetQrCodeExt()
 	if file.CheckNotExist(src) == true {
 		return false
 	}
 	return true
-}
+} */
 func (q *QrCode) Encode(path string) (string, string, error) {
 	name := GetQrCodeFileName(q.URL) + q.GetQrCodeExt()
 	src := path + name

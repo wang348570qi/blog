@@ -3,23 +3,18 @@ package tag_service
 import (
 	"encoding/json"
 	"io"
-	"oldboymiaosha/models"
-	"oldboymiaosha/pkg/file"
-	"oldboymiaosha/pkg/gredis"
-	"oldboymiaosha/pkg/logging"
-	"oldboymiaosha/service/cache_service"
-	"strconv"
-	"time"
+	"blog/models"
+	"blog/pkg/gredis"
+	"blog/pkg/logging"
+	"blog/service/cache_service"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
-	"github.com/EDDYCJY/go-gin-example/pkg/export"
-	"github.com/tealeg/xlsx"
 )
 
 type Tag struct {
 	ID         int
 	Name       string
-	CreateBy   string
+	CreatedBy  string
 	ModifiedBy string
 	State      int
 	PageNum    int
@@ -35,7 +30,7 @@ func (t *Tag) ExistByID() (bool, error) {
 }
 
 func (t *Tag) Add() error {
-	return models.AddTag(t.Name, t.State, t.CreateBy)
+	return models.AddTag(t.Name, t.State, t.CreatedBy)
 }
 
 func (t *Tag) Edit() error {
@@ -70,7 +65,7 @@ func (t *Tag) GetAll() ([]models.Tag, error) {
 			logging.Info(err)
 		} else {
 			json.Unmarshal(data, &cacheTags)
-			return cachetags, nil
+			return cacheTags, nil
 
 		}
 	}
@@ -83,7 +78,7 @@ func (t *Tag) GetAll() ([]models.Tag, error) {
 
 }
 
-func (t *Tag) Export() (string, error) {
+/* func (t *Tag) Export() (string, error) {
 	tags, err := t.GetAll()
 	if err != nil {
 		return "", err
@@ -130,9 +125,9 @@ func (t *Tag) Export() (string, error) {
 	}
 	return filename, nil
 
-}
+} */
 
-func (t *Tag)Import(r io.Reader) error {
+func (t *Tag) Import(r io.Reader) error {
 	xlsx, err := excelize.OpenReader(r)
 	if err != nil {
 		return err

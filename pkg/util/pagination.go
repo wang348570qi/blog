@@ -3,7 +3,7 @@ package util
 import (
 	"github.com/unknwon/com"
 
-	"oldboymiaosha/pkg/setting"
+	"blog/pkg/setting"
 
 	"github.com/gin-gonic/gin"
 )

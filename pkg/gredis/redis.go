@@ -2,7 +2,7 @@ package gredis
 
 import (
 	"encoding/json"
-	"oldboymiaosha/pkg/setting"
+	"blog/pkg/setting"
 	"time"
 
 	"github.com/gomodule/redigo/redis"

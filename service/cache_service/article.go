@@ -1,7 +1,7 @@
 package cache_service
 
 import (
-	"oldboymiaosha/pkg/e"
+	"blog/pkg/e"
 	"strconv"
 	"strings"
 )
@@ -18,7 +18,7 @@ func (a *Article) GetArticleKey() string {
 	return e.CACHE_ARTICLE + "_" + strconv.Itoa(a.ID)
 }
 
-func (a *Article) getarticlesKey() string {
+func (a *Article) GetArticlesKey() string {
 	keys := []string{
 		e.CACHE_ARTICLE,
 		"LIST",

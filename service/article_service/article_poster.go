@@ -4,9 +4,13 @@ import (
 	"image"
 	"image/draw"
 	"image/jpeg"
-	"oldboymiaosha/pkg/file"
-	"oldboymiaosha/pkg/qrcode"
+	"io/ioutil"
+	"blog/pkg/file"
+	"blog/pkg/qrcode"
+	"blog/pkg/setting"
 	"os"
+
+	"github.com/golang/freetype"
 )
 
 type ArticlePoster struct {
@@ -70,6 +74,62 @@ func NewArticlePosterBg(name string, ap *ArticlePoster, rect *Rect, pt *Pt) *Art
 		Pt:            pt,
 	}
 }
+
+type DrawText struct {
+	JPG    draw.Image
+	Merged *os.File
+
+	Title string
+	X0    int
+	Y0    int
+	Size0 float64
+
+	SubTitle string
+	X1       int
+	Y1       int
+	Size1    float64
+}
+
+func (a *ArticlePosterBg) DrawPoster(d *DrawText, fontName string) error {
+	fontSource := setting.AppSetting.RuntimeRootPath + setting.AppSetting.FontSavePath + fontName
+	fontSourceBytes, err := ioutil.ReadFile(fontSource)
+	if err != nil {
+		return err
+	}
+
+	trueTypeFont, err := freetype.ParseFont(fontSourceBytes)
+	if err != nil {
+		return err
+	}
+
+	fc := freetype.NewContext()
+	fc.SetDPI(72)
+	fc.SetFont(trueTypeFont)
+	fc.SetFontSize(d.Size0)
+	fc.SetClip(d.JPG.Bounds())
+	fc.SetDst(d.JPG)
+	fc.SetSrc(image.Black)
+
+	pt := freetype.Pt(d.X0, d.Y0)
+	_, err = fc.DrawString(d.Title, pt)
+	if err != nil {
+		return err
+	}
+
+	fc.SetFontSize(d.Size1)
+	_, err = fc.DrawString(d.SubTitle, freetype.Pt(d.X1, d.Y1))
+	if err != nil {
+		return err
+	}
+
+	err = jpeg.Encode(d.Merged, d.JPG, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (a *ArticlePosterBg) Generate() (string, string, error) {
 	fullPath := qrcode.GetQrCodeFullPath()
 	fileName, path, err := a.Qr.Encode(fullPath)

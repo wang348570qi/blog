@@ -1,23 +1,22 @@
 package v1
 
 import (
-	"crypto/tls"
 	"github.com/boombuler/barcode/qr"
-	"path/filepath"
 
 	//"log"
-	"oldboymiaosha/pkg/app"
-	"oldboymiaosha/pkg/qrcode"
-	"oldboymiaosha/service/tag_service"
+	"blog/pkg/app"
+	"blog/pkg/qrcode"
+	"blog/service/tag_service"
 
 	//"github.com/gin-contrib/sse"
 	//"log"
 	"net/http"
-	"oldboymiaosha/pkg/e"
-	"oldboymiaosha/pkg/setting"
-	"oldboymiaosha/pkg/util"
+	"blog/pkg/e"
+	"blog/pkg/setting"
+	"blog/pkg/util"
 
-	"github.com/EDDYCJY/go-gin-example/service/article_service"
+	"blog/service/article_service"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/gin-gonic/gin"
 	"github.com/unknwon/com"
@@ -27,7 +26,12 @@ const (
 	QRCODE_URL = "/blog/"
 )
 
-//获取单个文章
+// @Summary Get a single article 获取单个文章
+// @Produce json
+// @Param id path int true "ID"
+// @Success 200 {object} app.Response
+// @failure 500 {object} app.Response
+// @Router /api/v1/articles/{id} [get]
 func GetArticle(c *gin.Context) {
 	appG := app.Gin{C: c}
 	id := com.StrTo(c.Param("id")).MustInt()
@@ -58,7 +62,14 @@ func GetArticle(c *gin.Context) {
 
 }
 
-//获取多个文章
+// @Summary Get multiple articles获取多个文章
+// @Produce json
+// @Param tag_id body int false "TagID"
+// @Param state body int false "State"
+// @Param created_by body int false "CreatedBy"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/articles [get]
 func GetArticles(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
@@ -94,6 +105,7 @@ func GetArticles(c *gin.Context) {
 	articles, err := articleService.GetAll()
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_GET_ARTICLES_FAIL, nil)
+		return
 	}
 	data := make(map[string]interface{})
 	data["lists"] = articles
@@ -112,7 +124,17 @@ type AddArticleForm struct {
 	State         int    `form:"state" valid:"Range(0,1)"`
 }
 
-//
+// @Summary Add article
+// @Produce json
+// @Param tag_id body int true "TagID"
+// @Param title body string true "Title"
+// @Param desc body string true "Desc"
+// @Param content body string true "Content"
+// @Param created_by body string true "CreatedBy"
+// @Param state body int true "State"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/articles [post]
 func AddArticle(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
@@ -124,13 +146,16 @@ func AddArticle(c *gin.Context) {
 		return
 	}
 
-	tagServer := tag_service.Tag{ID: form.TagID}
+	tagService := tag_service.Tag{ID: form.TagID}
 	exists, err := tagService.ExistByID()
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, e.ERROR_EXIST_TAG_FAIL, nil)
 		return
 	}
-
+	if !exists {
+		appG.Response(http.StatusOK, e.ERROR_NOT_EXIST_TAG, nil)
+		return
+	}
 	articleService := article_service.Article{
 		TagID:         form.TagID,
 		Title:         form.Title,
@@ -158,14 +183,25 @@ type EditArticleForm struct {
 	State         int    `form:"state" valid:"Range(0,1)"`
 }
 
-//修改文章
+// @Summary Update article修改文章
+// @Produce json
+// @Param id path int true "ID"
+// @Param tag_id body string false "TagID"
+// @Param title body string false "Title"
+// @Param desc body string false "Desc"
+// @Param content body string false "Content"
+// @Param modified_by body string true "ModifiedBy"
+// @Param state body int false "State"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/articles/{id} [put]
 func EditArticle(c *gin.Context) {
 	var (
 		appG = app.Gin{C: c}
-		form = EditArticleForm{ID: com.Param("id").MustInt()}
+		form = EditArticleForm{ID: com.StrTo(c.Param("id")).MustInt()}
 	)
 
-	httpCode, errCode := app.BindAndValid(c, &from)
+	httpCode, errCode := app.BindAndValid(c, &form)
 	if errCode != e.SUCCESS {
 		appG.Response(httpCode, errCode, nil)
 		return
@@ -210,11 +246,16 @@ func EditArticle(c *gin.Context) {
 
 }
 
-//删除文章
+// @Summary Delete article删除文章
+// @Produce json
+// @Param id path int true "ID"
+// @Success 200 {object} app.Response
+// @Failure 500 {object} app.Response
+// @Router /api/v1/articles/{id} [delete]
 func DeleteArticle(c *gin.Context) {
 	appG := app.Gin{C: c}
 	valid := validation.Validation{}
-	id := com.StrTo(c.Param("id").MustInt())
+	id := com.StrTo(c.Param("id")).MustInt()
 	valid.Min(id, 1, "id").Message("id必须大于0")
 	if valid.HasErrors() {
 		app.MarkErrors(valid.Errors)

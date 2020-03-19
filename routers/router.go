@@ -2,17 +2,17 @@ package routers
 
 import (
 	"net/http"
-	"oldboymiaosha/middleware/jwt"
-	"oldboymiaosha/pkg/export"
-	"oldboymiaosha/pkg/qrcode"
-	"oldboymiaosha/pkg/setting"
-	"oldboymiaosha/pkg/upload"
-	"oldboymiaosha/routers/api"
+	"blog/middleware/jwt"
+	"blog/pkg/export"
+	"blog/pkg/qrcode"
+	"blog/pkg/setting"
+	"blog/pkg/upload"
+	"blog/routers/api"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
-	v1 "oldboymiaosha/routers/api/v1"
+	v1 "blog/routers/api/v1"
 
 	_ "github.com/EDDYCJY/go-gin-example/docs"
 	"github.com/gin-gonic/gin"
@@ -59,9 +59,9 @@ func InitRouter() *gin.Engine {
 		apiv1.POST("/article/poster/generate", v1.GenerateArticlePoster)
 
 		//导出
-		r.POST("/tags/export", v1.ExportTag)
+		//r.POST("/tags/export", v1.ExportTag)
 		//导入tag
-		r.POST("/tags/import", v1.ImportTag)
+		//r.POST("/tags/import", v1.ImportTag)
 
 	}
 	return r

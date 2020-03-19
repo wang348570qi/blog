@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -51,7 +49,7 @@ func ExitTagByName(name string) (bool, error) {
 }
 func ExitTagById(id int) (bool, error) {
 	var tag Tag
-	err := db.Select("id").Where("id=?", id).First(&tag).Error
+	err := db.Select("id").Where("id=? and deleted_on=?", id, 0).First(&tag).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return false, err
 	}
@@ -74,7 +72,7 @@ func AddTag(name string, state int, createdBy string) error {
 
 }
 
-func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
+/* func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("CreatedOn", time.Now().Unix())
 	return nil
 }
@@ -82,10 +80,10 @@ func (tag *Tag) BeforeCreate(scope *gorm.Scope) error {
 func (tag *Tag) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 	return nil
-}
+} */
 
 func EditTag(id int, data interface{}) error {
-	if err := db.Model(&Tag{}).Where("id=?", id).Updates(data).Error; err != nil {
+	if err := db.Model(&Tag{}).Where("id=? and deleted_on=?", id, 0).Updates(data).Error; err != nil {
 		return err
 	}
 	return nil

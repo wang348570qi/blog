@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/jinzhu/gorm"
 )
 
@@ -19,14 +17,14 @@ type Article struct {
 	State         int    `json:"state"`
 }
 
-func (article *Article) BeforeCreate(scope *gorm.Scope) error {
+/* func (article *Article) BeforeCreate(scope *gorm.Scope) error {
 	scope.SetColumn("CreatedOn", time.Now().Unix())
 	return nil
 }
 func (article *Article) BeforeUpdate(scope *gorm.Scope) error {
 	scope.SetColumn("ModifiedOn", time.Now().Unix())
 	return nil
-}
+} */
 
 func ExistArticleByID(id int) (bool, error) {
 	var article Article
@@ -80,12 +78,13 @@ func EditArticle(id int, data interface{}) error {
 
 func AddArticle(data map[string]interface{}) error {
 	article := Article{
-		TagID:     data["tag_id"].(int),
-		Title:     data["title"].(string),
-		Desc:      data["desc"].(string),
-		Content:   data["content"].(string),
-		CreatedBy: data["created_by"].(string),
-		State:     data["state"].(int),
+		TagID:         data["tag_id"].(int),
+		Title:         data["title"].(string),
+		Desc:          data["desc"].(string),
+		Content:       data["content"].(string),
+		CreatedBy:     data["created_by"].(string),
+		State:         data["state"].(int),
+		CoverImageUrl: data["cover_image_url"].(string),
 	}
 	if err := db.Create(&article).Error; err != nil {
 		return err

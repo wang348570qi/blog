@@ -3,6 +3,7 @@ package logging
 import (
 	"fmt"
 	"log"
+	"blog/pkg/file"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -32,7 +33,7 @@ func Setup() {
 	var err error
 	filePath := getLogFilePath()
 	fileName := getLogFileName()
-	F, err = openLogFile(fileName, filePath)
+	F, err = file.MustOpen(fileName, filePath)
 	if err != nil {
 		log.Fatalln(err)
 	}

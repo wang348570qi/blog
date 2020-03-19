@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/robfig/cron"
 	"log"
-	"oldboymiaosha/models"
+	"blog/models"
 	"time"
 )
 

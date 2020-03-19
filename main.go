@@ -2,44 +2,47 @@ package main
 
 import (
 	"fmt"
-	"github.com/fvbock/endless"
 	"log"
-	"oldboymiaosha/models"
-	"oldboymiaosha/pkg/logging"
-	"syscall"
+	"net/http"
+	"blog/models"
+	"blog/pkg/gredis"
+	"blog/pkg/logging"
 
-	"oldboymiaosha/pkg/setting"
-	"oldboymiaosha/routers"
+	"blog/pkg/setting"
+	"blog/routers"
+
+	"blog/pkg/util"
+
+	"github.com/gin-gonic/gin"
 )
 
-func main() {
+func init() {
 	setting.Setup()
 	models.Setup()
 	logging.Setup()
+	gredis.Setup()
+	util.Setup()
+}
 
-	endless.DefaultReadTimeOut = setting.ServerSetting.ReadTimeout
-	endless.DefaultWriteTimeOut = setting.ServerSetting.WriteTimeout
-	endless.DefaultMaxHeaderBytes = 1 << 20
+func main() {
+	gin.SetMode(setting.ServerSetting.RunMode)
+	routersInit := routers.InitRouter()
+	readTimeOut := setting.ServerSetting.ReadTimeout
+	writeTimeOut := setting.ServerSetting.WriteTimeout
+	maxHeaderBytes := 1 << 20
 	endPoint := fmt.Sprintf(":%d", setting.ServerSetting.HttpPort)
 
-	server := endless.NewServer(endPoint, routers.InitRouter())
-	server.BeforeBegin = func(add string) {
-		log.Printf("actual pid is %d", syscall.Getpid())
+	s := &http.Server{
+		Addr:           endPoint,
+		Handler:        routersInit,
+		ReadTimeout:    readTimeOut,
+		WriteTimeout:   writeTimeOut,
+		MaxHeaderBytes: maxHeaderBytes,
 	}
-
-	err := server.ListenAndServe()
+	log.Printf("[info] start http server listening %s", endPoint)
+	err := s.ListenAndServe()
 	if err != nil {
 		log.Printf("server err:%v", err)
 	}
-	//路由配置
-	/*router := routers.InitRouter()
 
-	s := &http.Server{
-		Addr:           fmt.Sprintf(":%d", setting.HTTPPort),
-		Handler:        router,
-		ReadTimeout:    setting.ReadTimeout,
-		WriteTimeout:   setting.WriteTimeout,
-		MaxHeaderBytes: 1 << 20,
-	}
-	s.ListenAndServe()*/
 }

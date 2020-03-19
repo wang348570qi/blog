@@ -1,6 +1,7 @@
 package export
 
-import "oldboymiaosha/pkg/setting"
+import "blog/pkg/setting"
+const EXT =".xlsx"
 
 func GetExcelFullUrl(name string) string {
 	return setting.AppSetting.PrefixUrl + "/" + GetExcelPath() + name
