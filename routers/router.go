@@ -1,20 +1,21 @@
 package routers
 
 import (
-	"net/http"
 	"blog/middleware/jwt"
 	"blog/pkg/export"
 	"blog/pkg/qrcode"
 	"blog/pkg/setting"
 	"blog/pkg/upload"
 	"blog/routers/api"
+	"net/http"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/swaggo/gin-swagger/swaggerFiles"
 
 	v1 "blog/routers/api/v1"
 
-	_ "github.com/EDDYCJY/go-gin-example/docs"
+	_ "blog/docs"
+
 	"github.com/gin-gonic/gin"
 )
 
