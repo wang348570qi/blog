@@ -1,19 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
 	"blog/models"
 	"blog/pkg/gredis"
 	"blog/pkg/logging"
+	"fmt"
+	"log"
+	"net/http"
 
 	"blog/pkg/setting"
 	"blog/routers"
 
 	"blog/pkg/util"
-
-	"github.com/gin-gonic/gin"
 )
 
 func init() {
@@ -25,7 +23,6 @@ func init() {
 }
 
 func main() {
-	gin.SetMode(setting.ServerSetting.RunMode)
 	routersInit := routers.InitRouter()
 	readTimeOut := setting.ServerSetting.ReadTimeout
 	writeTimeOut := setting.ServerSetting.WriteTimeout
